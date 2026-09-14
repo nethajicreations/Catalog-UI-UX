@@ -67,7 +67,8 @@ export const StorefrontProduct: React.FC<StorefrontProductProps> = ({ onOpenCart
     const text = encodeURIComponent(
       `Hello ${currentTenant.name}! I would like to order:\n\n*${product.name}*\nSKU: ${product.sku}\nQuantity: ${quantity} unit(s)\nPrice: ₹${activePrice * quantity}\n\nPlease confirm availability!`
     );
-    window.open(`https://wa.me/${currentTenant.supportPhone.replace(/[^0-9]/g, '')}?text=${text}`, '_blank');
+    const phone = (currentTenant.supportPhone || currentTenant.whatsappNumber || currentTenant.phone || '').replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
   };
 
   const handleShare = () => {

@@ -41,8 +41,13 @@ interface StoreContextType {
   // Current Tenant
   currentTenant: TenantStore;
   availableTenants: TenantStore[];
+  tenants: TenantStore[];
   switchTenant: (tenantId: string) => void;
   updateTenantSettings: (updated: Partial<TenantStore>) => void;
+  updateTenant: (id: string, updated: Partial<TenantStore>) => void;
+  createTenant: (nameOrData: string | Partial<TenantStore>, slug?: string) => TenantStore;
+  b2bModeActive: boolean;
+  setB2bModeActive: (active: boolean) => void;
 
   // Products
   products: Product[];
@@ -130,7 +135,9 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [tenants, setTenants] = useState<TenantStore[]>(TENANT_STORES);
   const [currentTenant, setCurrentTenant] = useState<TenantStore>(TENANT_STORES[0]);
+  const [b2bModeActive, setB2bModeActive] = useState<boolean>(false);
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
   const [catalogues, setCatalogues] = useState<Catalogue[]>(INITIAL_CATALOGUES);
@@ -163,16 +170,107 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const switchTenant = (tenantId: string) => {
-    const found = TENANT_STORES.find(t => t.id === tenantId);
+    const found = tenants.find(t => t.id === tenantId) || TENANT_STORES.find(t => t.id === tenantId);
     if (found) {
       setCurrentTenant(found);
       addToast(`Switched active store to "${found.name}"`, 'info');
     }
   };
 
+  const updateTenant = (id: string, updated: Partial<TenantStore>) => {
+    setTenants(prev => prev.map(t => (t.id === id ? { ...t, ...updated } : t)));
+    setCurrentTenant(prev => (prev.id === id ? { ...prev, ...updated } : prev));
+  };
+
   const updateTenantSettings = (updated: Partial<TenantStore>) => {
-    setCurrentTenant(prev => ({ ...prev, ...updated }));
+    updateTenant(currentTenant.id, updated);
     addToast('Store settings updated successfully', 'success');
+  };
+
+  const createTenant = (nameOrData: string | Partial<TenantStore>, customSlug?: string): TenantStore => {
+    const newId = 'store_' + Date.now();
+    let newTenant: TenantStore;
+
+    if (typeof nameOrData === 'string') {
+      const storeName = nameOrData;
+      const s = customSlug || storeName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      newTenant = {
+        id: newId,
+        name: storeName,
+        slug: s,
+        tagline: 'Quality goods curated for you',
+        logo: '🏬',
+        bannerImage: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1600&q=80',
+        currency: 'INR',
+        currencySymbol: '₹',
+        categoryTheme: 'General Store',
+        primaryColor: '#0f172a',
+        accentColor: '#3b82f6',
+        fontFamily: 'Plus Jakarta Sans',
+        email: `contact@${s}.com`,
+        supportEmail: `support@${s}.com`,
+        phone: '+91 98765 43210',
+        supportPhone: '+91 98765 43210',
+        customDomain: '',
+        address: 'Main Market, City Center',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        pincode: '400001',
+        supportHours: 'Mon - Sat: 9:00 AM - 8:00 PM',
+        whatsappNumber: '+91 98765 43210',
+        instagram: `@${s}`,
+        theme: {
+          primaryColor: '#0f172a',
+          accentColor: '#3b82f6',
+          fontFamily: 'Plus Jakarta Sans',
+          bannerUrl: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1600&q=80',
+          announcementText: `Welcome to ${storeName}! Check out our latest products`,
+          showAnnouncement: true,
+        },
+      };
+    } else {
+      const baseName = nameOrData.name || 'New Store';
+      const s = nameOrData.slug || baseName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      newTenant = {
+        id: newId,
+        name: baseName,
+        slug: s,
+        tagline: nameOrData.tagline || 'Quality goods curated for you',
+        logo: nameOrData.logo || '🏬',
+        bannerImage: nameOrData.bannerImage || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1600&q=80',
+        currency: nameOrData.currency || 'INR',
+        currencySymbol: nameOrData.currencySymbol || '₹',
+        categoryTheme: nameOrData.categoryTheme || 'General Store',
+        primaryColor: nameOrData.primaryColor || '#0f172a',
+        accentColor: nameOrData.accentColor || '#3b82f6',
+        fontFamily: nameOrData.fontFamily || 'Plus Jakarta Sans',
+        email: nameOrData.email || `contact@${s}.com`,
+        supportEmail: nameOrData.supportEmail || `support@${s}.com`,
+        phone: nameOrData.phone || '+91 98765 43210',
+        supportPhone: nameOrData.supportPhone || '+91 98765 43210',
+        customDomain: nameOrData.customDomain || '',
+        address: nameOrData.address || 'Main Market, City Center',
+        city: nameOrData.city || 'Mumbai',
+        state: nameOrData.state || 'Maharashtra',
+        pincode: nameOrData.pincode || '400001',
+        supportHours: nameOrData.supportHours || 'Mon - Sat: 9:00 AM - 8:00 PM',
+        whatsappNumber: nameOrData.whatsappNumber || '+91 98765 43210',
+        instagram: nameOrData.instagram || `@${s}`,
+        theme: nameOrData.theme || {
+          primaryColor: nameOrData.primaryColor || '#0f172a',
+          accentColor: nameOrData.accentColor || '#3b82f6',
+          fontFamily: nameOrData.fontFamily || 'Plus Jakarta Sans',
+          bannerUrl: nameOrData.bannerImage || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1600&q=80',
+          announcementText: `Welcome to ${baseName}!`,
+          showAnnouncement: true,
+        },
+      };
+    }
+
+    setTenants(prev => [...prev, newTenant]);
+    setCurrentTenant(newTenant);
+    addToast(`New store "${newTenant.name}" created and switched!`, 'success');
+    return newTenant;
   };
 
   // Products CRUD
@@ -605,9 +703,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <StoreContext.Provider
       value={{
         currentTenant,
-        availableTenants: TENANT_STORES,
+        availableTenants: tenants,
+        tenants,
         switchTenant,
         updateTenantSettings,
+        updateTenant,
+        createTenant,
+        b2bModeActive,
+        setB2bModeActive,
         products,
         addProduct,
         updateProduct,

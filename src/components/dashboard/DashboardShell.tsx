@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from '../../context/RouterContext';
 import { useStore } from '../../context/StoreContext';
+import { CommandPalette } from './CommandPalette';
 import {
   LayoutDashboard,
   Store,
@@ -28,6 +29,7 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Menu,
   X,
   ExternalLink,
@@ -43,13 +45,27 @@ interface DashboardShellProps {
 
 export const DashboardShell: React.FC<DashboardShellProps> = ({ children }) => {
   const { currentPath, navigate } = useRouter();
-  const { currentTenant, orders, products, liveVisitors } = useStore();
+  const { currentTenant, availableTenants, switchTenant, orders, products, liveVisitors } = useStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [quickActionOpen, setQuickActionOpen] = useState(false);
+  const [storeMenuOpen, setStoreMenuOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Global Cmd+K / Ctrl+K listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Count pending orders
   const pendingOrdersCount = orders.filter(o => o.fulfillmentStatus === 'pending' || o.fulfillmentStatus === 'processing').length;
@@ -127,7 +143,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-neutral-100 flex flex-col antialiased text-neutral-900">
       {/* Top Header */}
-      <header className="bg-white border-b border-neutral-200 sticky top-7 z-30 h-16 flex items-center justify-between px-4 sm:px-6 shadow-xs">
+      <header className="bg-white border-b border-neutral-200 sticky top-0 z-30 h-16 flex items-center justify-between px-4 sm:px-6 shadow-xs">
         <div className="flex items-center gap-3">
           {/* Mobile menu toggle */}
           <button
@@ -139,44 +155,109 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children }) => {
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Store identity */}
-          <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-neutral-900 text-white flex items-center justify-center text-lg shadow-xs font-bold">
-              {currentTenant.logo}
-            </span>
-            <div className="leading-tight">
-              <h1 className="text-sm font-bold text-neutral-900 tracking-tight flex items-center gap-1.5">
-                {currentTenant.name}
-                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">
-                  Active Store
-                </span>
-              </h1>
-              <p className="text-xs text-neutral-500 hidden sm:block truncate max-w-[200px]">
-                {currentTenant.tagline}
-              </p>
-            </div>
+          {/* Store identity & Switcher */}
+          <div className="relative">
+            <button
+              id="dashboard-store-switcher-btn"
+              type="button"
+              onClick={() => setStoreMenuOpen(!storeMenuOpen)}
+              className="flex items-center gap-2.5 p-1 -m-1 rounded-xl hover:bg-neutral-50 transition-colors text-left focus:outline-none group"
+              title="Click to switch active store"
+            >
+              <span className="w-9 h-9 rounded-xl bg-neutral-900 text-white flex items-center justify-center text-lg shadow-xs font-bold shrink-0">
+                {currentTenant.logo}
+              </span>
+              <div className="leading-tight">
+                <h1 className="text-sm font-bold text-neutral-900 tracking-tight flex items-center gap-1.5">
+                  <span>{currentTenant.name}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-700 transition-colors" />
+                </h1>
+                <p className="text-xs text-neutral-500 hidden sm:block truncate max-w-[180px]">
+                  {currentTenant.tagline}
+                </p>
+              </div>
+            </button>
+
+            {storeMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setStoreMenuOpen(false)} />
+                <div className="absolute left-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-neutral-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-3 py-1.5 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+                    Switch Active Store
+                  </div>
+                  {availableTenants.map(tenant => (
+                    <button
+                      key={tenant.id}
+                      type="button"
+                      onClick={() => {
+                        switchTenant(tenant.id);
+                        setStoreMenuOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors ${
+                        tenant.id === currentTenant.id ? 'bg-emerald-50/60' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span className="w-7 h-7 rounded-lg bg-neutral-900 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          {tenant.logo}
+                        </span>
+                        <div className="truncate">
+                          <p className="text-xs font-bold text-neutral-900 truncate">{tenant.name}</p>
+                          <p className="text-[10px] text-neutral-400 truncate">{tenant.categoryTheme}</p>
+                        </div>
+                      </div>
+                      {tenant.id === currentTenant.id && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                  <div className="border-t border-neutral-100 my-1 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStoreMenuOpen(false);
+                        navigate('/dashboard/settings');
+                      }}
+                      className="w-full px-3 py-1.5 text-xs text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 flex items-center gap-2 font-medium"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Manage All Stores & Domains</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Global Search & Quick Actions */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          {/* Search bar */}
-          <div className="relative hidden md:block w-64 lg:w-80">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input
-              id="dashboard-global-search-input"
-              type="text"
-              placeholder="Search products, orders, customers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
-                  navigate(`/dashboard/products?search=${encodeURIComponent(searchQuery)}`);
-                }
-              }}
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg pl-9 pr-3 py-1.5 text-xs text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all"
-            />
-          </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile search button */}
+          <button
+            id="mobile-search-btn"
+            type="button"
+            onClick={() => setCommandPaletteOpen(true)}
+            className="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
+            title="Search (⌘K)"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
+          {/* Desktop Search bar button */}
+          <button
+            id="dashboard-global-search-btn"
+            type="button"
+            onClick={() => setCommandPaletteOpen(true)}
+            className="hidden md:flex items-center justify-between w-64 lg:w-80 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-1.5 text-xs text-neutral-500 hover:text-neutral-900 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-2 truncate">
+              <Search className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 shrink-0" />
+              <span className="truncate">Search products, orders, customers...</span>
+            </div>
+            <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400 bg-white border border-neutral-200 rounded shadow-2xs">
+              <span className="text-[9px]">⌘</span>K
+            </kbd>
+          </button>
 
           {/* Quick Create Action Button */}
           <div className="relative">
@@ -252,9 +333,10 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children }) => {
             id="header-preview-store-btn"
             type="button"
             onClick={() => navigate(`/store/${currentTenant.slug}`)}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+            title="Preview Live Storefront in Customer View"
           >
-            <span>View Store</span>
+            <span className="hidden sm:inline">View Store</span>
             <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
           </button>
 
@@ -635,6 +717,12 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children }) => {
           <span>More</span>
         </button>
       </nav>
+
+      {/* Global Command Palette */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
     </div>
   );
 };

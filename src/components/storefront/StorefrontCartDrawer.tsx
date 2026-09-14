@@ -113,7 +113,8 @@ export const StorefrontCartDrawer: React.FC<StorefrontCartDrawerProps> = ({ isOp
       `Hello ${currentTenant.name}! I would like to place an order:\n\n${itemsList}\n\n*Total Amount:* ₹${grandTotal}\n*Delivery to:* ${customerName}, ${shippingAddress}, ${city} - ${pincode}\n*Contact:* ${customerPhone}\n\nPlease confirm availability and payment details!`
     );
 
-    window.open(`https://wa.me/${currentTenant.supportPhone.replace(/[^0-9]/g, '')}?text=${msg}`, '_blank');
+    const phone = (currentTenant.supportPhone || currentTenant.whatsappNumber || currentTenant.phone || '').replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   };
 
   return (

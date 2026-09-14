@@ -1,5 +1,14 @@
 export type Currency = 'INR' | 'USD' | 'EUR';
 
+export interface StoreTheme {
+  primaryColor: string;
+  accentColor: string;
+  fontFamily: string;
+  bannerUrl: string;
+  announcementText: string;
+  showAnnouncement: boolean;
+}
+
 export interface TenantStore {
   id: string;
   name: string;
@@ -14,7 +23,10 @@ export interface TenantStore {
   accentColor: string;
   fontFamily: string;
   email: string;
+  supportEmail?: string;
   phone: string;
+  supportPhone: string;
+  customDomain?: string;
   address: string;
   city: string;
   state: string;
@@ -22,6 +34,7 @@ export interface TenantStore {
   supportHours: string;
   whatsappNumber: string;
   instagram: string;
+  theme: StoreTheme;
 }
 
 export type Tenant = TenantStore;

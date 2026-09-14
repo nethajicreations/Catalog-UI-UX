@@ -70,7 +70,8 @@ export const StorefrontCatalogue: React.FC<StorefrontCatalogueProps> = ({ onOpen
     const msg = encodeURIComponent(
       `Hello ${currentTenant.name}! I am browsing your *${catalogue.name}* catalogue and would like to order:\n\n${items}\n\n*Total Amount:* ₹${cartTotal}\n\nPlease confirm availability!`
     );
-    window.open(`https://wa.me/${currentTenant.supportPhone.replace(/[^0-9]/g, '')}?text=${msg}`, '_blank');
+    const phone = (currentTenant.supportPhone || currentTenant.whatsappNumber || currentTenant.phone || '').replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   };
 
   const handleShareCatalogue = () => {

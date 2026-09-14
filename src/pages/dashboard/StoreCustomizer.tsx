@@ -20,22 +20,26 @@ export const StoreCustomizer: React.FC = () => {
   const { navigate } = useRouter();
   const { currentTenant, updateTenant, addToast } = useStore();
 
-  const [name, setName] = useState(currentTenant.name);
-  const [tagline, setTagline] = useState(currentTenant.tagline);
-  const [primaryColor, setPrimaryColor] = useState(currentTenant.theme.primaryColor);
-  const [fontFamily, setFontFamily] = useState(currentTenant.theme.fontFamily);
-  const [bannerUrl, setBannerUrl] = useState(currentTenant.theme.bannerUrl);
-  const [announcementText, setAnnouncementText] = useState(currentTenant.theme.announcementText);
-  const [showAnnouncement, setShowAnnouncement] = useState(currentTenant.theme.showAnnouncement);
+  const [name, setName] = useState(currentTenant.name || '');
+  const [tagline, setTagline] = useState(currentTenant.tagline || '');
+  const [primaryColor, setPrimaryColor] = useState(currentTenant.theme?.primaryColor || currentTenant.primaryColor || '#059669');
+  const [fontFamily, setFontFamily] = useState(currentTenant.theme?.fontFamily || currentTenant.fontFamily || 'Plus Jakarta Sans');
+  const [bannerUrl, setBannerUrl] = useState(currentTenant.theme?.bannerUrl || currentTenant.bannerImage || '');
+  const [announcementText, setAnnouncementText] = useState(currentTenant.theme?.announcementText || '⚡ Extra 10% OFF on Prepaid Orders');
+  const [showAnnouncement, setShowAnnouncement] = useState(currentTenant.theme?.showAnnouncement ?? true);
   const [deviceView, setDeviceView] = useState<'desktop' | 'mobile'>('desktop');
 
   const handleSaveTheme = () => {
     updateTenant(currentTenant.id, {
       name,
       tagline,
+      primaryColor,
+      fontFamily,
+      bannerImage: bannerUrl,
       theme: {
-        ...currentTenant.theme,
+        ...(currentTenant.theme || {}),
         primaryColor,
+        accentColor: currentTenant.theme?.accentColor || currentTenant.accentColor || primaryColor,
         fontFamily,
         bannerUrl,
         announcementText,
