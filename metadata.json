@@ -1,0 +1,6 @@
+{
+  "name": "CatalogPro",
+  "description": "Multi-tenant commerce SaaS platform to build online catalogues, manage orders, inventory, B2B pricing, WhatsApp commerce, and custom storefronts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
