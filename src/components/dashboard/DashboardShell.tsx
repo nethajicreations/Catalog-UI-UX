@@ -37,6 +37,7 @@ import {
   LogOut,
   Sliders,
   CheckCircle2,
+  Palette,
 } from 'lucide-react';
 
 interface DashboardShellProps {
@@ -122,6 +123,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({ children }) => {
     {
       label: 'SETTINGS',
       items: [
+        { label: 'Store Customizer', path: '/dashboard/customizer', icon: Palette },
         { label: 'Store Settings', path: '/dashboard/settings', icon: Settings },
       ],
     },

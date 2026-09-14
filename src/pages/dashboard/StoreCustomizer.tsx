@@ -23,10 +23,13 @@ export const StoreCustomizer: React.FC = () => {
   const [name, setName] = useState(currentTenant.name || '');
   const [tagline, setTagline] = useState(currentTenant.tagline || '');
   const [primaryColor, setPrimaryColor] = useState(currentTenant.theme?.primaryColor || currentTenant.primaryColor || '#059669');
+  const [accentColor, setAccentColor] = useState(currentTenant.theme?.accentColor || currentTenant.accentColor || '#047857');
   const [fontFamily, setFontFamily] = useState(currentTenant.theme?.fontFamily || currentTenant.fontFamily || 'Plus Jakarta Sans');
   const [bannerUrl, setBannerUrl] = useState(currentTenant.theme?.bannerUrl || currentTenant.bannerImage || '');
   const [announcementText, setAnnouncementText] = useState(currentTenant.theme?.announcementText || '⚡ Extra 10% OFF on Prepaid Orders');
   const [showAnnouncement, setShowAnnouncement] = useState(currentTenant.theme?.showAnnouncement ?? true);
+  const [whatsappNumber, setWhatsappNumber] = useState(currentTenant.whatsappNumber || '+91 98201 44521');
+  const [instagram, setInstagram] = useState(currentTenant.instagram || '@dailyneeddeals');
   const [deviceView, setDeviceView] = useState<'desktop' | 'mobile'>('desktop');
 
   const handleSaveTheme = () => {
@@ -34,12 +37,15 @@ export const StoreCustomizer: React.FC = () => {
       name,
       tagline,
       primaryColor,
+      accentColor,
+      whatsappNumber,
+      instagram,
       fontFamily,
       bannerImage: bannerUrl,
       theme: {
         ...(currentTenant.theme || {}),
         primaryColor,
-        accentColor: currentTenant.theme?.accentColor || currentTenant.accentColor || primaryColor,
+        accentColor,
         fontFamily,
         bannerUrl,
         announcementText,
@@ -152,6 +158,50 @@ export const StoreCustomizer: React.FC = () => {
               onChange={(e) => setPrimaryColor(e.target.value)}
               className="w-full font-mono bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-1 text-neutral-900 text-[11px]"
             />
+          </div>
+
+          {/* Accent Color */}
+          <div className="pt-2 border-t border-neutral-100">
+            <label className="block font-semibold text-neutral-700 mb-1.5">Accent Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="w-8 h-8 rounded-lg border border-neutral-200 cursor-pointer p-0.5 bg-white"
+              />
+              <input
+                type="text"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="w-full font-mono bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-1 text-neutral-900 text-[11px]"
+              />
+            </div>
+          </div>
+
+          {/* WhatsApp & Socials */}
+          <div className="pt-2 border-t border-neutral-100 space-y-3">
+            <h3 className="font-bold text-neutral-900 uppercase tracking-wider text-[11px]">Direct Commerce & Socials</h3>
+            <div>
+              <label className="block font-semibold text-neutral-700 mb-1">WhatsApp Business Number</label>
+              <input
+                type="text"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="+91 98201 44521"
+                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-1.5 text-neutral-900 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-neutral-700 mb-1">Instagram Handle</label>
+              <input
+                type="text"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="@yourbrand"
+                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-1.5 text-neutral-900 text-xs"
+              />
+            </div>
           </div>
 
           {/* Typography */}

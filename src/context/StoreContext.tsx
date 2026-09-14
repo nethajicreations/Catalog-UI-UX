@@ -87,6 +87,7 @@ interface StoreContextType {
 
   // Inventory & Stock Movements
   stockMovements: StockMovement[];
+  stockLogs: StockMovement[];
   adjustStock: (productId: string, quantityChange: number, reason: string, warehouse: string) => void;
 
   // Marketing & Coupons
@@ -732,6 +733,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         customers,
         addCustomerNote,
         stockMovements,
+        stockLogs: stockMovements,
         adjustStock,
         coupons,
         addCoupon,

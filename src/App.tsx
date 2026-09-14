@@ -20,6 +20,12 @@ import { WhatsAppCommerce } from './pages/dashboard/WhatsAppCommerce';
 import { AnalyticsPage } from './pages/dashboard/AnalyticsPage';
 import { StoreCustomizer } from './pages/dashboard/StoreCustomizer';
 import { SettingsPage } from './pages/dashboard/SettingsPage';
+import { LiveVisitorsPage } from './pages/dashboard/LiveVisitorsPage';
+import { CouponsPage } from './pages/dashboard/CouponsPage';
+import { BannersPage } from './pages/dashboard/BannersPage';
+import { PaymentsPage } from './pages/dashboard/PaymentsPage';
+import { TeamMembersPage } from './pages/dashboard/TeamMembersPage';
+import { BillingPage } from './pages/dashboard/BillingPage';
 
 // Storefront Pages & Components
 import { StorefrontHeader } from './components/storefront/StorefrontHeader';
@@ -129,9 +135,16 @@ const AppRouter: React.FC = () => {
           {activePath === '/dashboard/orders' && <OrdersList />}
           {activePath.startsWith('/dashboard/orders/') && <OrderDetails />}
           {activePath === '/dashboard/inventory' && <InventoryPage />}
+          {activePath === '/dashboard/inventory/movements' && <InventoryPage />}
           {activePath === '/dashboard/customers' && <CustomersPage />}
           {activePath === '/dashboard/whatsapp' && <WhatsAppCommerce />}
           {activePath === '/dashboard/analytics' && <AnalyticsPage />}
+          {activePath === '/dashboard/live-visitors' && <LiveVisitorsPage />}
+          {activePath === '/dashboard/coupons' && <CouponsPage />}
+          {activePath === '/dashboard/banners' && <BannersPage />}
+          {activePath === '/dashboard/payments' && <PaymentsPage />}
+          {activePath === '/dashboard/team' && <TeamMembersPage />}
+          {activePath === '/dashboard/billing' && <BillingPage />}
           {activePath === '/dashboard/customizer' && <StoreCustomizer />}
           {activePath === '/dashboard/settings' && <SettingsPage />}
         </DashboardShell>

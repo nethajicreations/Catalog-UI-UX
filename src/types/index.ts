@@ -211,11 +211,14 @@ export interface Coupon {
   code: string;
   discountType: 'percentage' | 'fixed';
   amount: number;
+  discountValue?: number;
   minOrder: number;
+  minOrderValue?: number;
   maxDiscount?: number;
   usageLimit: number;
   usedCount: number;
   expiration: string;
+  expiryDate?: string;
   status: 'active' | 'expired' | 'disabled';
   description: string;
 }

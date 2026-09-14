@@ -16,7 +16,7 @@ import {
 
 export const InventoryPage: React.FC = () => {
   const { navigate } = useRouter();
-  const { products, stockLogs, adjustStock, currentTenant } = useStore();
+  const { products, stockMovements, stockLogs: ctxLogs, adjustStock, currentTenant } = useStore();
 
   const [search, setSearch] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'low' | 'out'>('all');
@@ -25,10 +25,11 @@ export const InventoryPage: React.FC = () => {
   const [adjustmentReason, setAdjustmentReason] = useState('Stock replenishment');
   const [location, setLocation] = useState('Main Warehouse');
 
-  const totalSKUs = products.length;
-  const totalUnits = products.reduce((acc, p) => acc + p.stock, 0);
-  const lowStockItems = products.filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold);
-  const outOfStockItems = products.filter((p) => p.stock === 0);
+  const stockLogs = stockMovements || ctxLogs || [];
+  const totalSKUs = products?.length || 0;
+  const totalUnits = (products || []).reduce((acc, p) => acc + p.stock, 0);
+  const lowStockItems = (products || []).filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold);
+  const outOfStockItems = (products || []).filter((p) => p.stock === 0);
 
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
@@ -181,28 +182,32 @@ export const InventoryPage: React.FC = () => {
           </div>
 
           <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-            {stockLogs.map((log) => (
-              <div key={log.id} className="p-2.5 rounded-lg bg-neutral-50 border border-neutral-100 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-neutral-900 truncate max-w-[140px]">{log.productName}</span>
-                  <span
-                    className={`font-bold ${
-                      log.change > 0 ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
-                  >
-                    {log.change > 0 ? `+${log.change}` : log.change}
-                  </span>
+            {stockLogs.map((log: any) => {
+              const qty = log.change ?? (log.type === 'in' || log.type === 'return' ? log.quantity : -log.quantity) ?? log.quantity ?? 0;
+              const isPositive = qty > 0 || log.type === 'in' || log.type === 'return';
+              return (
+                <div key={log.id} className="p-2.5 rounded-lg bg-neutral-50 border border-neutral-100 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-neutral-900 truncate max-w-[140px]">{log.productName}</span>
+                    <span
+                      className={`font-bold ${
+                        isPositive ? 'text-emerald-600' : 'text-rose-600'
+                      }`}
+                    >
+                      {qty > 0 ? `+${qty}` : qty}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-neutral-500 mt-1 flex justify-between">
+                    <span>{log.reason}</span>
+                    <span className="font-mono text-[10px]">{log.newStock} left</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400 mt-1 flex justify-between">
+                    <span>{log.warehouse || log.location || 'Main Warehouse'}</span>
+                    <span>{log.date}</span>
+                  </div>
                 </div>
-                <div className="text-[11px] text-neutral-500 mt-1 flex justify-between">
-                  <span>{log.reason}</span>
-                  <span className="font-mono text-[10px]">{log.newStock} left</span>
-                </div>
-                <div className="text-[10px] text-neutral-400 mt-1 flex justify-between">
-                  <span>{log.location}</span>
-                  <span>{log.date}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
